@@ -1,0 +1,234 @@
+import React, { useState, useEffect } from 'react';
+
+// --- MOCK DATA ---
+const mockData = {
+    pg: [
+        { id: 1, name: "Zenith Student Living", dist: 0.8, priceRange: "8,500 - 15,000", image: "https://placehold.co/600x400/fb923c/ffffff?text=Zenith+Living", type: 'pg', location: "Malviya Nagar, Jaipur", featured: true, details: { desc: "Cutting-edge student accommodation with high-speed Wi-Fi, a modern gym, and collaborative study zones.", rooms: [ { type: "3-Seater Shared", price: 8500, img: "https://placehold.co/600x400/fb923c/ffffff?text=3-Seater" }, { type: "2-Seater Shared", price: 11000, img: "https://placehold.co/600x400/fb923c/ffffff?text=2-Seater" }, { type: "Private Studio", price: 15000, img: "https://placehold.co/600x400/fb923c/ffffff?text=Studio" } ] } },
+        { id: 2, name: "The Nomad's Hub", dist: 1.2, priceRange: "7,000 - 12,500", image: "https://placehold.co/600x400/3b82f6/ffffff?text=Nomad's+Hub", type: 'pg', location: "C-Scheme, Jaipur", featured: false, details: { desc: "A vibrant co-living space for professionals and creatives, featuring weekly networking events.", rooms: [ { type: "Bunk Bed", price: 7000, img: "https://placehold.co/600x400/3b82f6/ffffff?text=Bunk+Bed" }, { type: "Private Room", price: 12500, img: "https://placehold.co/600x400/3b82f6/ffffff?text=Private" } ] } },
+    ],
+    hotel: [
+        { id: 3, name: "The Jaipur Modern", dist: 2.5, priceRange: "12,000 - 35,000", image: "https://placehold.co/600x400/8b5cf6/ffffff?text=Jaipur+Modern", type: 'hotel', location: "Civil Lines, Jaipur", featured: true, details: { desc: "A boutique hotel blending Rajasthani heritage with minimalist design. Rooftop pool and fine-dining.", rooms: [ { type: "Deluxe Room", price: 12000, img: "https://placehold.co/600x400/8b5cf6/ffffff?text=Deluxe" }, { type: "Heritage Suite", price: 22000, img: "https://placehold.co/600x400/8b5cf6/ffffff?text=Suite" }, { type: "Event Space", price: 35000, img: "https://placehold.co/600x400/8b5cf6/ffffff?text=Events" } ] } },
+        { id: 4, name: "Aura Smart Stay", dist: 1.8, priceRange: "9,000 - 18,000", image: "https://placehold.co/600x400/f59e0b/ffffff?text=Aura+Stay", type: 'hotel', location: "Vaishali Nagar, Jaipur", featured: false, details: { desc: "Tech-enabled hotel with smart room controls, contactless check-in, and an EV charging station.", rooms: [ { type: "Smart Room", price: 9000, img: "https://placehold.co/600x400/f59e0b/ffffff?text=Smart+Room" }, { type: "Family Suite", price: 18000, img: "https://placehold.co/600x400/f59e0b/ffffff?text=Family+Suite" } ] } },
+    ],
+    rental: [
+         { id: 5, type: 'rental', name: "Loft Apartment, 2BHK", subtype: "Flat", area: "1400 sq.ft.", price: "25,000/month", image: "https://placehold.co/600x400/ec4899/ffffff?text=Loft+Apt", location: "Jagatpura, Jaipur", featured: false, details: { desc: "Stunning industrial-style loft with double-height ceilings and a private terrace." } },
+         { id: 6, type: 'rental', name: "Office Space for Creatives", subtype: "Office", area: "800 sq.ft.", price: "40,000/month", image: "https://placehold.co/600x400/14b8a6/ffffff?text=Creative+Office", location: "Bapu Nagar, Jaipur", featured: true, details: { desc: "Bright, open-plan office space perfect for startups and design studios." } },
+    ],
+    resort: [
+        { id: 8, name: "The Oasis Club", purpose: "Weddings, Corporate Retreats", priceRange: "Starts at 2,50,000", image: "https://placehold.co/600x400/ef4444/ffffff?text=Oasis+Club", type: 'resort', location: "Sirsi Road, Jaipur", featured: false, details: { desc: "An exclusive resort with private villas, a golf course, and bespoke event planning services.", themes: [ { name: "Grand Indian Wedding", img: "https://placehold.co/600x400/ef4444/ffffff?text=Royal+Theme" }, { name: "Corporate Offsite", img: "https://placehold.co/600x400/ef4444/ffffff?text=Corporate" } ] } },
+    ]
+};
+const allData = [...mockData.pg, ...mockData.hotel, ...mockData.rental, ...mockData.resort];
+const featuredData = allData.filter(item => item.featured);
+
+// --- HELPER FUNCTIONS ---
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+};
+
+// --- REACT COMPONENTS ---
+
+const Logo = () => (
+    <div className="flex items-center space-x-3">
+        <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+        </div>
+        <span className="text-3xl font-bold text-gray-800">ZAR</span>
+    </div>
+);
+
+const Header = ({ onSearch }) => (
+    <header className="mb-8">
+        <div className="flex justify-between items-center mb-6">
+            <Logo />
+            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center ring-2 ring-offset-2 ring-orange-500">
+                <span className="text-xl font-semibold text-gray-600">U</span>
+            </div>
+        </div>
+        <div>
+            <h1 className="text-3xl font-bold text-gray-800">{getGreeting()}!</h1>
+            <p className="text-gray-500">Zarurat Accommodation & Rent</p>
+        </div>
+    </header>
+);
+
+const SearchAndFilter = ({ activeFilter, onFilterChange, onSearch }) => (
+    <div className="sticky top-0 bg-gray-50/80 backdrop-blur-lg z-10 py-4 -mx-4 px-4 mb-8">
+        <div className="relative mb-4">
+            <input
+                type="text"
+                placeholder="Search by name, location, or type (e.g., 'Hotel in C-Scheme')"
+                className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-full shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none transition"
+                onChange={(e) => onSearch(e.target.value)}
+            />
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+        <nav>
+            <ul className="flex space-x-2 overflow-x-auto pb-2">
+                {[
+                    { key: 'all', label: 'All', icon: '✨' },
+                    { key: 'pg', label: 'PG/Hostel', icon: '🛌' },
+                    { key: 'hotel', label: 'Hotel', icon: '🏨' },
+                    { key: 'rental', label: 'Rental', icon: '🏠' },
+                    { key: 'resort', label: 'Resort', icon: '🎉' },
+                ].map(filter => (
+                    <li key={filter.key}>
+                        <button
+                            onClick={() => onFilterChange(filter.key)}
+                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center space-x-2 border-2 ${
+                                activeFilter === filter.key
+                                    ? 'bg-orange-500 text-white border-orange-500 shadow-lg'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-600'
+                            }`}
+                        >
+                            <span>{filter.icon}</span>
+                            <span>{filter.label}</span>
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    </div>
+);
+
+const PropertyCard = ({ item, onCardClick, isFeatured = false }) => (
+    <div 
+        className={`bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group ${isFeatured ? 'w-80 flex-shrink-0' : ''}`}
+        onClick={() => onCardClick(item)}
+    >
+        <div className="relative">
+            <img src={item.image} alt={item.name} className="w-full h-48 object-cover" />
+            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-orange-700 uppercase tracking-wider">
+                {item.type}
+            </div>
+        </div>
+        <div className="p-4">
+            <h3 className="font-bold text-lg text-gray-800 truncate">{item.name}</h3>
+            <p className="text-sm text-gray-500 mb-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /></svg>
+                {item.location}
+            </p>
+            <p className="font-semibold text-orange-600 text-lg">
+                ₹{item.priceRange || item.price}
+            </p>
+        </div>
+    </div>
+);
+
+const Modal = ({ item, onClose }) => {
+    const [activeRoom, setActiveRoom] = useState(item.details.rooms ? item.details.rooms[0] : null);
+
+    useEffect(() => {
+        const handleEsc = (event) => { if (event.keyCode === 27) onClose(); };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [onClose]);
+
+    if (!item) return null;
+    
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="relative">
+                    <img src={item.image} alt={item.name} className="w-full h-64 object-cover"/>
+                    <button onClick={onClose} className="absolute top-4 right-4 bg-white/80 rounded-full p-2 text-gray-700 hover:bg-white transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div className="p-6 overflow-y-auto">
+                    <h3 className="text-3xl font-bold text-gray-900">{item.name}</h3>
+                    <p className="text-md text-gray-500 mt-1 font-medium flex items-center">📍 {item.location}</p>
+                    <p className="text-gray-600 my-4">{item.details.desc}</p>
+                    
+                    {item.details.rooms && (
+                        <>
+                            <h4 className="font-semibold mt-6 mb-3 text-gray-700">Available Options</h4>
+                            <div className="mb-4"><img src={activeRoom.img} alt={activeRoom.type} className="w-full h-64 object-cover rounded-xl shadow-inner"/></div>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {item.details.rooms.map(room => (
+                                    <button key={room.type} onClick={() => setActiveRoom(room)} className={`py-2 px-4 rounded-full text-sm transition-colors ${activeRoom.type === room.type ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}>{room.type}</button>
+                                ))}
+                            </div>
+                            <p className="text-3xl font-bold text-gray-800">₹{activeRoom.price.toLocaleString()}</p>
+                        </>
+                    )}
+                    
+                    <div className="mt-6 border-t pt-6">
+                        <button className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded-xl hover:bg-orange-600 transition-transform transform hover:scale-105">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+export default function App() {
+    const [activeFilter, setActiveFilter] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [filteredData, setFilteredData] = useState(allData);
+
+    useEffect(() => {
+        let data = allData;
+        
+        if (activeFilter !== 'all') {
+            data = data.filter(item => item.type === activeFilter);
+        }
+        
+        if (searchTerm) {
+            data = data.filter(item => 
+                item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.type.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        
+        setFilteredData(data);
+    }, [activeFilter, searchTerm]);
+
+    return (
+        <div className="bg-gray-50 min-h-screen font-sans">
+            <main className="max-w-7xl mx-auto p-4 md:p-8">
+                <Header />
+                <SearchAndFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} onSearch={setSearchTerm} />
+
+                <div className="mb-12">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Featured Properties</h2>
+                    <div className="flex space-x-6 overflow-x-auto pb-4 -mx-4 px-4">
+                       {featuredData.map(item => (
+                            <PropertyCard key={item.id} item={item} onCardClick={setSelectedItem} isFeatured={true} />
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">All Listings</h2>
+                    {filteredData.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {filteredData.map(item => (
+                                <PropertyCard key={item.id} item={item} onCardClick={setSelectedItem} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-16">
+                            <p className="text-gray-600 text-lg font-semibold">No Properties Found</p>
+                            <p className="text-gray-400 mt-2">Try adjusting your search or filters.</p>
+                        </div>
+                    )}
+                </div>
+            </main>
+
+            {selectedItem && <Modal item={selectedItem} onClose={() => setSelectedItem(null)} />}
+        </div>
+    );
+}
